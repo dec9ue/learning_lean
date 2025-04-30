@@ -106,7 +106,7 @@ def my_tail {α : Type} (xs : List α) (hnonempty : xs ≠ []): List α :=
   | [] => absurd (by rfl) hnonempty
   | _::xs => xs
 
-def my_quick_sort0  {α : Type} [instlt : LT α][instdc : DecidableLT α] : List α → List α :=
+def my_quick_sort  {α : Type} [instlt : LT α][instdc : DecidableLT α] : List α → List α :=
   fun l =>
     if hlength : l.length = 0
     then []
@@ -118,8 +118,7 @@ def my_quick_sort0  {α : Type} [instlt : LT α][instdc : DecidableLT α] : List
         exact rfl
       let pivot := my_head l lnonempty
       let xs := my_tail l lnonempty
-      let p := (fun x => x < pivot)
-      let parted := xs.partition p
+      let parted := xs.partition (fun x => x < pivot)
       let smaller := parted.1
       let larger  := parted.2
       have hl2 : l.length = (pivot :: xs).length := by
@@ -180,76 +179,5 @@ def my_quick_sort0  {α : Type} [instlt : LT α][instdc : DecidableLT α] : List
                 rw [fun_comp_not]
                 exact List.length_filter_le (fun x ↦ !decide (x < y)) zh
             _ < (z :: zh).length + 1 := by norm_num
-      (my_quick_sort0 smaller ++ [pivot] ++ my_quick_sort0 larger)
+      (my_quick_sort smaller ++ [pivot] ++ my_quick_sort larger)
   termination_by xs => xs.length
-
-
-/-
-def my_quick_sort {α : Type} [LT α][DecidableLT α] : List α → List α :=
-  λ l => match hl : l with
-  | [] => []
-  | [x] => [x]
-  | pivot :: xs =>
-    let p := (fun x => x < pivot)
-    let parted := xs.partition p
-    let smaller := parted.1
-    let larger := parted.2
-    have p_decidable : DecidablePred p := by
-      infer_instance
-    have list_filter_lemma :
-      (List.filter (fun b ↦ decide (b < pivot)) xs).length < xs.length + 1 := by
-      calc
-        _ ≤ xs.length := by apply filter_length
-        _ < xs.length + 1 := by exact lt_add_one xs.length
-    have filter_length_lemma (xs : List α):
-      (xs.filter p).length ≤ xs.length := by
-      apply filter_length
-    have : smaller.length < l.length := by
-      simp only [parted, larger, smaller]
-      simp only [List.partition_eq_filter_filter]
-      rw [hl]
-      rw [List.length_cons]
-      calc
-        _ ≤ xs.length := by
-          generalize xs = ys
-          induction ys with
-          | nil => rfl
-          | cons x xs ih =>
-            simp only [List.length_cons]
-            by_cases hpx : p x
-            .
-              simp [hpx]
-              exact ih
-            .
-              simp [hpx]
-              calc
-                _ ≤ xs.length  := by exact ih
-                _ ≤ xs.length + 1 := by norm_num
-        _ < xs.length + 1 := by
-          exact lt_add_one xs.length
-    have : larger.length < l.length := by
-      simp only [parted, larger, smaller]
-      simp only [List.partition_eq_filter_filter]
-      rw [hl]
-      rw [List.length_cons]
-      calc
-        _ ≤ xs.length := by
-          generalize xs = ys
-          induction ys with
-          | nil => rfl
-          | cons x xs ih =>
-            simp only [List.length_cons]
-            by_cases hpx : p x
-            .
-              simp [hpx]
-              calc
-                _ ≤ xs.length  := by exact ih
-                _ ≤ xs.length + 1 := by norm_num
-            .
-              simp [hpx]
-              exact ih
-        _ < xs.length + 1 := by
-          exact lt_add_one xs.length
-    (my_quick_sort smaller ++ [pivot] ++ my_quick_sort larger)
-  termination_by x1 => x1.length
--/
