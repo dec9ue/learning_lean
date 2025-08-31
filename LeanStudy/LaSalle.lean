@@ -9,7 +9,7 @@ import Mathlib.Analysis.Calculus.ContDiff.RCLike
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
-import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.Order.Filter.Basic
 
 noncomputable section
@@ -180,7 +180,7 @@ lemma continuous_dVdt_of_C1
       hV.continuous_fderiv (by norm_num)
     simpa using hhV
   -- pair with x ↦ f x
-  have hpair : Continuous (fun x : E n => (fderiv ℝ V x, f x)) := h1.prod_mk hf
+  have hpair : Continuous (fun x : E n => (fderiv ℝ V x, f x)) := Continuous.prodMk h1 hf
   -- evaluation (A,v) ↦ A v is continuous
   have happly : Continuous (fun p : (E n →L[ℝ] ℝ) × (E n) => p.1 p.2) :=
     isBoundedBilinearMap_apply.continuous
@@ -341,7 +341,7 @@ lemma omegaLimit_subset_Z
           -- slope g a b = (g b - g a)/(b - a) since a ≠ b
           have hne : a ≠ b := ne_of_lt hlt
           have hs : slope g a b = (g b - g a) / (b - a) := by
-            simp [slope_def_field, hne]
+            simp [slope_def_field]
           -- combine with the derivative equality at c
           have : (g b - g a) / (b - a) ≤ -ε := by
             simpa [hc_slope] using hdc
@@ -352,21 +352,21 @@ lemma omegaLimit_subset_Z
           mul_le_mul_of_nonneg_left hslope_le (le_of_lt hbpos)
         have hbne_zero_0 : b - a ≠ 0 := ne_of_gt hbpos
         have hdiff_le : g b - g a ≤ -ε * (b - a) := by
-          rw [slope] at hdiff_le'
-          field_simp at hdiff_le'
+          rw [slope_def_field] at hdiff_le'
+          field_simp [hbne_zero_0] at hdiff_le'
           simpa [slope_def_field, hbne_zero_0, g, a, b,
                  mul_comm, mul_left_comm, mul_assoc] using hdiff_le'
         have hdiff_le : g b - g a ≤ -ε * (b - a) := by
           have hbne_zero_1 : b - a ≠ 0 := ne_of_gt hbpos
           -- simplify (b-a) * slope g a b = g b - g a
-          rw [slope] at hdiff_le'
+          rw [slope_def_field] at hdiff_le'
           field_simp at hdiff_le'
           simpa [slope_def_field, hbne_zero_1, g, a, b,
                  mul_comm, mul_left_comm, mul_assoc] using hdiff_le'
         -- rearrange: g b ≤ g a - ε*(b-a)
         have hfinal : g b ≤ g a - ε * (b - a) := by
           have : g b ≤ -ε * (b - a) + g a := (sub_le_iff_le_add).mp hdiff_le
-          simp [add_comm, add_left_comm, add_assoc, this]
+          simp only [ge_iff_le]
           linarith
         -- substitute the definitions of g,a,b and (b-a)=σ
         simpa [g, a, b, sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hfinal
