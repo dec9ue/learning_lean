@@ -81,18 +81,6 @@ lemma V_nonincreasing_along
 def MaxInvIn (φ : E n → ℝ → E n) (S : Set (E n)) : Set (E n) :=
   ⋃₀ {T : Set (E n) | T ⊆ S ∧ PositivelyInvariant φ T}
 
-lemma MaxInvIn_subset (φ : E n → ℝ → E n) (S : Set (E n)) :
-    MaxInvIn φ S ⊆ S := by
-  intro x hx
-  rcases Set.mem_sUnion.mp hx with ⟨T, hTmem, hxT⟩
-  exact hTmem.1 hxT
-
-lemma MaxInvIn_invariant (φ : E n → ℝ → E n) (S : Set (E n)) :
-    PositivelyInvariant φ (MaxInvIn φ S) := by
-  intro x hx t ht
-  rcases Set.mem_sUnion.mp hx with ⟨T, hTmem, hxT⟩
-  have hxT' : φ x t ∈ T := (hTmem.2) hxT ht
-  exact Set.mem_sUnion.mpr ⟨T, hTmem, hxT'⟩
 
 /- One standard definition of the ω-limit set of the trajectory from `x0`. -/
 def omegaLimit (φ : E n → ℝ → E n) (x0 : E n) : Set (E n) :=
@@ -168,13 +156,7 @@ lemma V_equal_on_omega_shift
   -- conclude equality
   simp [hVy, hVφy]
 
-/-- If `Ω` is positively invariant and `x0 ∈ Ω`, the trajectory stays in `Ω` for all `t ≥ 0`. -/
-lemma traj_mem_of_posInvariant
-    {Ω : Set (E n)} {x0 : E n}
-    (hΩ_inv : PositivelyInvariant φ Ω) (hx0 : x0 ∈ Ω) :
-    ∀ {t}, 0 ≤ t → φ x0 t ∈ Ω := by
-  intro t ht
-  exact hΩ_inv hx0 ht
+/- If `Ω` is positively invariant and `x0 ∈ Ω`, the trajectory stays in `Ω` for all `t ≥ 0`. -/
 
 /-- Under closedness and positive invariance, the ω-limit set from `x0 ∈ Ω` is contained in `Ω`. -/
 lemma omegaLimit_subset_of_closed_posInvariant
@@ -208,20 +190,6 @@ lemma continuous_dVdt_of_C1
     happly.comp hpair
   simpa [dVdt] using hcomp
 
-/-
-/-- Adding a nonnegative constant preserves divergence to `+∞` (as a map on the codomain). -/
-lemma tendsto_atTop_add_const_right (s : ℝ) :
-    Tendsto (fun t : ℝ => t + s) atTop atTop := by
-  -- For any threshold `B`, eventually `t + s ≥ B` once `t ≥ B - s`.
-  refine Filter.tendsto_atTop.2 ?_
-  intro B
-  refine Filter.eventually_atTop.2 ?_
-  refine ⟨B - s, ?_⟩
-  intro t ht
-  have : (B - s) + s ≤ t + s := add_le_add_right ht s
-  have hB : B = (B - s) + s := by ring
-  simpa [hB.symm] using this
--/
 /-- The ω-limit set is positively invariant under the semiflow when
     (i) the semigroup/shift property holds and (ii) the map `z ↦ φ z s` is
     continuous for each fixed nonnegative `s`. -/
