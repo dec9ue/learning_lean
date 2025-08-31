@@ -1,22 +1,12 @@
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Data.Real.Basic
-import Mathlib.Data.Matrix.Basic
-import Mathlib.Data.Fintype.Basic
-import Mathlib.Tactic.FinCases
-import Mathlib.Analysis.SpecialFunctions.Exp
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
-import Mathlib.Analysis.ODE.Gronwall
-import Mathlib.Analysis.ODE.PicardLindelof
 import Mathlib.Analysis.Calculus.Deriv.Slope
 import Mathlib.Topology.Basic
-import Mathlib.MeasureTheory.Function.L2Space
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 import Mathlib.Analysis.Calculus.Gradient.Basic
 import Mathlib.Analysis.InnerProductSpace.Dual
+import Mathlib.Analysis.Calculus.ContDiff.RCLike
+import Mathlib.Analysis.Calculus.ContDiff.Basic
 
 noncomputable section
 open scoped Topology
@@ -101,7 +91,9 @@ lemma nonincreasing_of_chain_rule_fderiv
     deriv (fun s => V (x x0 s)) t1 ≤ 0 := by
     rw [HasDerivAt.deriv (@hderiv_chain x0 t1)]
     apply hle
-  apply antitone_of_deriv_nonpos (by fun_prop) hderiv_nonpos
+  have hdiff : Differentiable ℝ (fun s => V (x x0 s)) := by
+      simpa [Function.comp] using ((hV.comp (hxC1 x0)).differentiable le_rfl)
+  apply antitone_of_deriv_nonpos hdiff hderiv_nonpos
   assumption
 
 /--
@@ -156,9 +148,6 @@ lemma lyapunov_stability_full
   (hle_grad : ∀ y, ((gradient V) y) ⬝ᵥ (f y) ≤ 0)
   : isStable x x₀ := by
   apply lyapunov_stability_from_nonincreasing (V:=V) (x:=x) (x₀:=x₀)
-  show ∀ (x0 : E n) {t₁ t₂ : ℝ}, 0 ≤ t₁ → t₁ ≤ t₂ → V (x x0 t₂) ≤ V (x x0 t₁)
-  . apply nonincreasing_of_chain_rule_grad hV_C1 (fun x0 ↦ hx_C1 x0) hode hle_grad
-  show ∀ (x0 : E n), x x0 0 = x0
-  . exact fun x0 ↦ hinit x0
-  show IsLyapCore V x₀
-  . exact hcore
+  · exact hcore
+  · exact hinit
+  · apply nonincreasing_of_chain_rule_grad hV_C1 (fun x0 ↦ hx_C1 x0) hode hle_grad
