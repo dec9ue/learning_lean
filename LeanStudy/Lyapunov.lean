@@ -7,6 +7,7 @@ import Mathlib.Analysis.Calculus.Gradient.Basic
 import Mathlib.Analysis.InnerProductSpace.Dual
 import Mathlib.Analysis.Calculus.ContDiff.RCLike
 import Mathlib.Analysis.Calculus.ContDiff.Basic
+import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 noncomputable section
 open scoped Topology
@@ -93,8 +94,7 @@ lemma nonincreasing_of_chain_rule_fderiv
     apply hle
   have hdiff : Differentiable ℝ (fun s => V (x x0 s)) := by
       simpa [Function.comp] using ((hV.comp (hxC1 x0)).differentiable le_rfl)
-  apply antitone_of_deriv_nonpos hdiff hderiv_nonpos
-  assumption
+  exact (antitone_of_deriv_nonpos hdiff hderiv_nonpos) ht12
 
 /--
 This is a lemma that states that the Riesz representation theorem holds for finite-dimensional inner product spaces.
