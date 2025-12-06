@@ -35,13 +35,14 @@ def corner_parity (c : Cube n) (x0 y0 z0 x1 y1 z1: Fin n.val) : ZMod 2 :=
   c x1 y0 z0 + c x1 y0 z1 +
   c x1 y1 z0 + c x1 y1 z1
 
-theorem origin_parity_even_iff_any_subcube_parity_even
+theorem any_subcube_parity_even_iff_origin_parity_even_iff0
     {c : Cube n} :
-    (∀ x0 y0 z0 : Fin n.val,
-      corner_parity c 0 0 0 x0 y0 z0 = 0) ↔
     (∀ x0 y0 z0 x1 y1 z1 : Fin n.val,
-      corner_parity c x0 y0 z0 x1 y1 z1 = 0) := by
+      corner_parity c x0 y0 z0 x1 y1 z1 = 0) ↔
+    (∀ x0 y0 z0 : Fin n.val,
+      corner_parity c 0 0 0 x0 y0 z0 = 0) := by
   constructor
+  . grind
   · intro h x0 y0 z0 x1 y1 z1
     have : corner_parity c x0 y0 z0 x1 y1 z1 =
         corner_parity c 0 0 0 x0 y0 z0 +
@@ -54,6 +55,38 @@ theorem origin_parity_even_iff_any_subcube_parity_even
         corner_parity c 0 0 0 x1 y1 z1 := by
         grind [corner_parity]
     grind
-  . grind
 
+theorem any_subcube_parity_even_iff_origin_parity_even1
+    {c : Cube n} :
+    (∀ x0 y0 z0 x1 y1 z1 : Fin n.val,
+      corner_parity c x0 y0 z0 x1 y1 z1 = 0) ↔
+    (∀ x1 y1 z1 : Fin n.val,
+      corner_parity c 0 0 0 x1 y1 z1 = 0)  := by
+  constructor
+  . grind
+  . intro h0
+    have hx :
+       (∀ x0 x1 y1 z1 : Fin n.val,
+      corner_parity c x0 0 0 x1 y1 z1 = 0) := by
+      intro x0 x1 y1 z1
+      have : corner_parity c x0 0 0 x1 y1 z1 =
+        corner_parity c 0 0 0 x0 y1 z1 +
+        corner_parity c 0 0 0 x1 y1 z1 := by
+        grind [corner_parity]
+      grind
+    have hy :
+        (∀ x0 y0 x1 y1 z1 : Fin n.val,
+        corner_parity c x0 y0 0 x1 y1 z1 = 0) := by
+      intro x0 y0 x1 y1 z1
+      have : corner_parity c x0 y0 0 x1 y1 z1 =
+        corner_parity c x0 0 0 x1 y0 z1 +
+        corner_parity c x0 0 0 x1 y1 z1 := by
+        grind [corner_parity]
+      grind
+    intro x0 y0 z0 x1 y1 z1
+    have : corner_parity c x0 y0 z0 x1 y1 z1 =
+      corner_parity c x0 y0 0 x1 y1 z0 +
+      corner_parity c x0 y0 0 x1 y1 z1 := by
+      grind [corner_parity]
+    grind
 end Cube
