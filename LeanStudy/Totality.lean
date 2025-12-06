@@ -25,24 +25,49 @@ def Index.allList : List Index :=
   simp [Index.allList]
 
 /-- Selecting one of the `n` lamps along a fixed line through the cube. -/
-structure IndexedValue (n : ℕ) where
+structure AlgValue (n : ℕ) where
   index : Index
   value : Fin n
 deriving DecidableEq, Fintype, Ord, Repr
 
-def IndexedValue.allList (n : ℕ) : List (IndexedValue n) := do
-  let index <- Index.allList
-  let value <- List.finRange n
-  pure ⟨index, value⟩
+def AlgValue.allList (n : ℕ) : List (AlgValue n) :=
+  (Index.allList ×ˢ List.finRange n).map (fun p : Index × Fin n => ⟨p.1, p.2⟩)
 
-lemma IndexedValue.allList_total (n : ℕ) :
-    ∀ value : IndexedValue n, value ∈ IndexedValue.allList n := by
+lemma AlgValue.allList_total (n : ℕ) :
+    ∀ value : AlgValue n, value ∈ AlgValue.allList n := by
   classical
   intro value
-  cases value with
-  | mk index val =>
-    simp [IndexedValue.allList, List.bind_eq_flatMap, List.mem_flatMap, Index.mem_allList]
+  have hi : value.index ∈ Index.allList := Index.mem_allList value.index
+  have hv : value.value ∈ List.finRange n := by
+    grind [List.mem_finRange]
+  have hpair :
+      (value.index, value.value) ∈ Index.allList ×ˢ List.finRange n := by
+    grind [List.mem_product]
+  have hmap :
+      (⟨value.index, value.value⟩ : Index × Fin n)
+        ∈ (Index.allList ×ˢ List.finRange n).map
+          (fun p : Index × Fin n => ⟨p.1, p.2⟩) := by
+    grind only [usr List.contains_iff_exists_mem_beq, = List.contains_eq_mem, = List.mem_map,
+      =_ List.contains_iff_mem, = List.contains_map, → List.eq_nil_of_map_eq_nil]
+  grind [AlgValue.allList]
 
-lemma IndexedValue.allList_nodup (n : ℕ) :
-    (IndexedValue.allList n).Nodup := by
-  sorry
+lemma AlgValue.allList_nodup (n : ℕ) :
+    (AlgValue.allList n).Nodup := by
+  classical
+  have hprod :
+      (Index.allList ×ˢ List.finRange n).Nodup :=
+    List.Nodup.product Index.allList_nodup (List.nodup_finRange n)
+  have hf : Function.Injective (fun p : Index × Fin n => (⟨p.1, p.2⟩: Index × Fin n) ) := by
+    intro p q h
+    cases p
+    cases q
+    cases h
+    rfl
+  have hmap :
+      ((Index.allList ×ˢ List.finRange n).map
+          (fun p : Index × Fin n => (⟨p.1, p.2⟩: Index × Fin n))).Nodup := by
+    let f := fun p : Index × Fin n => (AlgValue.mk p.1 p.2)
+    apply @List.Nodup.map
+    apply hf
+    exact hprod
+  grind [AlgValue.allList]
