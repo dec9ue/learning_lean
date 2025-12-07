@@ -59,15 +59,9 @@ lemma AlgValue.allList_nodup (n : ℕ) :
     List.Nodup.product Index.allList_nodup (List.nodup_finRange n)
   have hf : Function.Injective (fun p : Index × Fin n => (⟨p.1, p.2⟩: Index × Fin n) ) := by
     intro p q h
-    cases p
-    cases q
-    cases h
-    rfl
+    simp only [Prod.mk.eta] at h
+    exact h
   have hmap :
       ((Index.allList ×ˢ List.finRange n).map
-          (fun p : Index × Fin n => (⟨p.1, p.2⟩: Index × Fin n))).Nodup := by
-    let f := fun p : Index × Fin n => (AlgValue.mk p.1 p.2)
-    apply @List.Nodup.map
-    apply hf
-    exact hprod
+          (fun p : Index × Fin n => (⟨p.1, p.2⟩: Index × Fin n))).Nodup := List.Nodup.map hf hprod
   grind [AlgValue.allList]
