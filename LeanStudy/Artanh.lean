@@ -1,4 +1,4 @@
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Analysis.SpecialFunctions.Exp
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Tactic.FieldSimp
@@ -29,7 +29,7 @@ theorem strictMono_tanh : StrictMono tanh := by
   ring_nf
   field_simp
   rw [← exp_add,← exp_add]
-  apply exp_strictMono
+  simp only [Nat.ofNat_pos, div_pos_iff_of_pos_right, lt_add_neg_iff_add_lt, zero_add, exp_lt_exp]
   linarith
 
 lemma tanh_eq_sinh_div_cosh_abst : tanh = fun x => sinh x / cosh x := by
@@ -69,18 +69,23 @@ lemma range_tanh : range tanh = (Ioo (-1) 1 : Set ℝ) := by
     have : -1 < y := by
       dsimp[y]
       field_simp
-      have : a * a + 1  > 0 := by nlinarith
+      have ha1_pos : a * a + 1  > 0 := by nlinarith
+      have ha1_pos' : a ^ 2 + 1  > 0 := by nlinarith
       have : - (a * a + 1) < a * a - 1 := by
         simp
         ring_nf
         field_simp
+        simp only [lt_add_iff_pos_right, Nat.ofNat_pos, mul_pos_iff_of_pos_right]
+        apply sq_pos_of_ne_zero (ne_of_gt ha)
+      show -1 < (a ^ 2 - 1) / (a ^ 2 + 1)
+      have : (- a ^ 2 - 1) / (a ^ 2 + 1) < (a ^ 2 - 1) / (a ^ 2 + 1) := by
+        apply (div_lt_div_iff_of_pos_right ?_).mpr
+        simp
+        apply sq_pos_of_ne_zero (ne_of_gt ha)
+        apply ha1_pos'
+      apply lt_of_eq_of_lt ?_ this
       field_simp
-      calc
-        _ = - (a * a + 1) / (a * a + 1) := by
-          field_simp
-        _ < (a * a - 1) / (a * a + 1) := by
-          refine (div_lt_div_iff_of_pos_right ?_).mpr this
-          linarith
+      linarith
     have : y ∈ Ioo (-1) 1 := ⟨ by linarith, by linarith ⟩
     convert this
     dsimp[y,a]
@@ -93,24 +98,24 @@ lemma range_tanh : range tanh = (Ioo (-1) 1 : Set ℝ) := by
     simp
     rw [exp_neg]
     field_simp
-    have : exp x * exp x = exp (2  * x) := by
-      rw [← exp_add]
-      simp
-      linarith
-    simp only [this]
-    have : _ := hy.2
-    have : _ := hy.1
-    have : 0 < 1 - y := by linarith
-    have : 0 < 1 + y := by linarith
-    have : exp (2 * x) = ((1 + y) / (1 - y)) := by
-      simp only [x]
-      simp
-      rw [exp_log (?_)]
-      field_simp
-      linarith
-    simp only [this]
-    field_simp
-    ring
+    have : exp x ^ 2 = exp (2 * x) := by
+      have : exp x * exp x = exp (2 * x) := by
+        rw [← exp_add]
+        ring_nf
+      rw [← this]
+      ring_nf
+    rw [this]
+    dsimp [x]
+    ring_nf
+    rw [exp_log]
+    grind
+    show 0 < y * (1 - y)⁻¹ + (1 - y)⁻¹
+    have : y * (1 - y)⁻¹ + (1 - y)⁻¹ = (y + 1) * (1 - y)⁻¹ := by
+      ring
+    rw [this]
+    apply div_pos
+    linarith [hy.1]
+    linarith [hy.2]
 
 lemma image_tanh : tanh '' univ = (Ioo (-1) 1 : Set ℝ) := by
   rw [image_univ]
