@@ -6,7 +6,7 @@ defaultTargets = ["LeanStudy"]
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 linter.unusedVariables = false
-linter.flexible = true
+# linter.flexible = true
 
 [[require]]
 name = "mathlib"
