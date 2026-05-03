@@ -38,13 +38,11 @@ noncomputable section
 There are infinitely many prime numbers p such that p ≡ 3 (mod 4).
 -/
 theorem infinitely_many_primes_mod_4_eq_3 : Set.Infinite {p : ℕ | Nat.Prime p ∧ p % 4 = 3} := by
-  -- This is a direct consequence of Dirichlet's theorem on arithmetic progressions, which states that there are infinitely many primes in any arithmetic progression where the modulus and the residue are coprime.
-  have dirichlet : ∀ {d r : ℕ}, d > 0 → Nat.gcd r d = 1 → Set.Infinite {p : ℕ | Nat.Prime p ∧ p ≡ r [MOD d]} := by
-    intro d r hd hr;
-    have := @Nat.setOf_prime_and_eq_mod_infinite d;
-    specialize @this ( by exact NeZero.of_gt hd ) ( r : ZMod d ) ;
-    have h0 := Nat.infinite_setOf_prime_and_eq_mod;
-    simp_all +decide [ ← ZMod.natCast_eq_natCast_iff ] ;
-    convert this _;
-    exact?;
-  simpa using @dirichlet 4 3 ( by decide ) ( by decide )
+  have h : {p : ℕ | p.Prime ∧ (p : ZMod 4) = 3}.Infinite :=
+    Nat.infinite_setOf_prime_and_eq_mod (by decide)
+  apply h.mono
+  rintro p ⟨hp, hpm⟩
+  refine ⟨hp, ?_⟩
+  have h4 : ((p : ℕ) : ZMod 4) = ((3 : ℕ) : ZMod 4) := by exact_mod_cast hpm
+  rw [ZMod.natCast_eq_natCast_iff, Nat.ModEq] at h4
+  omega
